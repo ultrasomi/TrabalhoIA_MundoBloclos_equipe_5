@@ -1,0 +1,97 @@
+% RESPONSAVEL: Doze (item 2) -- convertido do PDF "Parte 2.1 - Acoes" (versao corrigida).
+% Correcoes aplicadas apos a revisao: digitacao e o tratamento dos casos p0=p e l0=L no DELETE.
+\subsection{Efeitos das ações e tabela de adds/deletes}
+
+\subsubsection{Ações associadas aos elementos da representação}
+Os predicados $\At$ e $\Lev$ são os únicos elementos que são alterados pelo $\Move$. Já os demais elementos são estáticos, como o $\ell(b)$, ou são derivados: $\Cov$, $\Free$, $\Clr$, $\On$ e $\Stable$. Portanto seus valores são obtidos a partir do $\At$, $\Lev$ e $\ell(b)$.
+
+\subsubsection{Relação entre os símbolos e a ação move}
+\begin{center}
+\begin{tabular}{p{3.2cm} p{3cm} p{3cm} p{5cm}}
+\toprule
+Símbolo & ADD & DELETE & Uso \\
+\midrule
+$\ell(b)$ & -- & -- & Propriedade estática usada para limites, cobertura e estabilidade. \\
+$\At(b,p,t)$ & Nova posição de $b$ & Posição anterior de $b$ & Posição do bloco. \\
+$\Lev(b,l,t)$ & Novo nível de $b$ & Nível anterior de $b$ & Nível do bloco. \\
+$\Cov(b,s,l,t)$ & -- & -- & Derivado de $\At$, $\Lev$ e $\ell(b)$. \\
+$\Free(s,l,b,t)$ & -- & -- & Pré-condição do destino. \\
+$\Clr(b,t)$ & -- & -- & Pré-condição para mover $b$. \\
+$\On(b,y,t)$ & -- & -- & Derivado de $\Cov$. \\
+$\Stable(b,p,l,t)$ & -- & -- & Testado para garantir a estabilidade do destino. \\
+$\Span(b,p)$ & -- & -- & Derivado de $p$ e $\ell(b)$, representando os espaços ocupados pelo bloco. \\
+$\Overlap(b,p,y,q)$ & -- & -- & Testado em $\Poss(\Move(b,y,p),t)$ para verificar sobreposição com o apoio. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+A ação é $\Move(b,y,p)$, onde $b$ é o bloco a ser movimentado, $y$ o destino (bloco ou mesa) e $p$ é a nova posição de $b$.
+As condições de possibilidade dessa ação já são definidas por $\Poss(\Move(b,y,p),t)$, incluindo $\Clr$, $\Free$, limites de posições e $\Stable$.
+
+\subsubsection{Efeitos ADD e DELETE da ação}
+Se a ação $\Move(b,y,p)$ é executada no instante $t$, o bloco $b$ passa a ocupar uma nova posição e novo nível no instante $t+1$.
+
+\paragraph{ADD.} A nova posição e o novo nível são adicionados:
+\[
+\At(b,p,t+1)\qquad \Lev(b,L,t+1)
+\]
+Onde $L=0$ se o destino for a mesa $T$ e, se $y$ for outro bloco com $\Lev(y,l_y,t)$, então $L=l_y+1$.
+
+\paragraph{DELETE.} A posição anterior do bloco $b$ deixa de valer, desde que seja diferente da nova. Se antes da ação:
+\[
+\At(b,p_0,t)
+\]
+e $p_0\neq p$, então após o movimento:
+\[
+\neg\At(b,p_0,t+1)
+\]
+Se $p_0=p$ (o bloco apenas sobe ou desce no mesmo ponto), o $\At$ não é apagado: $\At(b,p,t+1)$ já vale pelo ADD, e apagá-lo o contradiria.
+
+Da mesma forma, se o nível anterior for:
+\[
+\Lev(b,l_0,t)
+\]
+e $l_0\neq L$, então:
+\[
+\neg\Lev(b,l_0,t+1)
+\]
+Se $l_0=L$ (o bloco desliza lateralmente no mesmo nível), o $\Lev$ não é apagado.
+
+Portanto, a ação $\Move$ remove diretamente a posição e o nível antigos, quando mudam, e adiciona a nova posição e o novo nível.
+
+\subsubsection{Predicados derivados}
+Os predicados derivados são: $\Cov$, $\Free$, $\Clr$, $\On$, $\Stable$.
+Após $\At$ e $\Lev$ serem alterados, esses predicados são recalculados pelas definições apresentadas no item 1.
+Por exemplo, $\On$ é derivado a partir da posição, nível e sobreposição dos blocos, enquanto $\Clr$ depende da existência ou não de blocos ocupando posições acima.
+Isso significa que não é necessário escrever: $\neg\Clr(y,t+1)$.
+
+\subsubsection{Estabilidade após o movimento}
+A estabilidade do bloco movimentado deve ser verificada antes que o movimento seja permitido: $\Stable(b,p,l,t)$.
+Assim, o novo estado só pode ser obtido se o bloco possuir suporte suficiente na posição e nível de destino.
+
+A estabilidade dos demais blocos não precisa ser verificada novamente porque $\Clr(b,t)$ é uma pré-condição para mover $b$. Pela definição de $\Clr$, isso garante que não existe nenhum bloco ocupando o nível imediatamente acima de $b$ e apoiado sobre sua região. Portanto, ao retirar $b$ de sua posição atual, nenhum outro bloco perde suporte por causa dessa remoção. Assim, basta verificar a estabilidade do próprio bloco movimentado em sua nova posição.
+
+\subsubsection{Aplicações}
+As regras acima são gerais e se aplicam às Situações 1, 2 e 3.
+Em todos os casos, permanecem os mesmos:
+\begin{itemize}
+\item os efeitos ADD sobre $\At$ e $\Lev$;
+\item os efeitos DELETE da posição e do nível anteriores do bloco movimentado;
+\item as pré-condições da ação $\Move$;
+\item os predicados derivados $\Cov$, $\Free$, $\Clr$, $\On$ e $\Stable$;
+\item os axiomas de persistência dos blocos não movimentados.
+\end{itemize}
+
+\paragraph{Persistência.} Para qualquer bloco $b'\neq b$, se a ação executada em $t$ move apenas o bloco $b$, então $b'$ mantém sua posição e seu nível em $t+1$:
+\begin{align*}
+b'\neq b &\rightarrow \bigl(\At(b',p',t)\leftrightarrow\At(b',p',t+1)\bigr)\\
+b'\neq b &\rightarrow \bigl(\Lev(b',l',t)\leftrightarrow\Lev(b',l',t+1)\bigr)
+\end{align*}
+Assim, a ação $\Move(b,y,p)$ altera diretamente apenas o bloco $b$. Os demais permanecem inalterados.
+
+Apenas o que muda entre as situações são:
+\begin{itemize}
+\item os estados iniciais;
+\item os estados objetivos;
+\item as instâncias da ação $\Move$.
+\end{itemize}

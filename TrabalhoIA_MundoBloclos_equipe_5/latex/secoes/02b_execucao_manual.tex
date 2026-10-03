@@ -1,0 +1,232 @@
+% RESPONSAVEL: Guilherme (item 3)
+\subsection{Execução Manual dos Cenários}
+
+Usamos a representação do Item 1 e os efeitos do Item 2. Nível máximo 2 e mesa de 0 a 6; cada bloco é escrito como $b(p,l)$.
+Em $\Poss(\Move(b,y,p),t)$, o nível-alvo é $L=0$ se $y=T$ e $L=l_y+1$ se $y$ é bloco. As pré-condições, numeradas, são:
+\begin{enumerate}
+\item[(P1)] $\Clr(b,t)$
+\item[(P2)] $y\neq b\ \land\ 0\le p\le 6-\ell(b)\ \land\ L\le 2$
+\item[(P3)] $y=T\ \lor\ \exists q.\ \At(y,q,t)\land\Overlap(b,p,y,q)$
+\item[(P4)] $\forall s\in[p,p+\ell(b)).\ \Free(s,L,b,t)$
+\item[(P5)] $\Stable(b,p,L,t)$
+\item[(P6)] $\neg(\At(b,p,t)\land\Lev(b,L,t))$
+\end{enumerate}
+Efeitos de $t$ para $t+1$: ADD $\At(b,p,t+1)$ e $\Lev(b,L,t+1)$. DELETE da posição anterior $p_0$ e do nível anterior $l_0$, \emph{somente se forem diferentes} de $p$ e $L$ (se $p_0=p$, o $\At$ não é apagado; se $l_0=L$, o $\Lev$ não é apagado). Persistência: todo $b'\neq b$ mantém $\At$ e $\Lev$. Os predicados derivados são recalculados.
+
+\subsubsection{Situação 1: $S_0\to S_{f3}$}
+Estado inicial e final conforme o item 1 ($S_{f3}$ é o mais curto dos quatro; os outros levam 4, 8 e 9 movimentos).
+
+Estado inicial: $a(3,0)\ b(5,0)\ c(0,0)\ d(3,1)$. Estado final: $a(2,0)\ b(5,0)\ c(0,0)\ d(0,1)$.
+
+\begin{longtable}{c p{2.6cm} c p{3.4cm} p{3.4cm} p{3.6cm}}
+\toprule $t$ & Ação & P1--P6 & Add & Delete & Estado em $t+1$ \\ \midrule \endhead
+0 & $\Move(d,c,0)$ & $\checkmark$ & $\At(d,0,1),\ \Lev(d,1,1)$ & $\At(d,3,1)$ & $a(3,0)\ b(5,0)\ c(0,0)\ d(0,1)$ \\
+1 & $\Move(a,T,2)$ & $\checkmark$ & $\At(a,2,2),\ \Lev(a,0,2)$ & $\At(a,3,2)$ & $a(2,0)\ b(5,0)\ c(0,0)\ d(0,1)$ \\
+\bottomrule \end{longtable}
+\paragraph{Verificação da $\Poss$.}\begin{itemize}
+\item $t=0$: $\Move(d,c,0)$ ($L=1$; antes: $d(3,1)$).
+\begin{itemize}
+\item (P1) nada cobre os slots \{3,4,5\} no nível 2\ $\checkmark$
+\item (P2) y$\neq$d, 0 $\le$ 0 $\le$ 3, L=1 $\le$ 2\ $\checkmark$
+\item (P3) span(d,0) = [0,3) e span(c,0) = [0,2) se sobrepõem\ $\checkmark$
+\item (P4) slots \{0,1,2\} livres no nível 1\ $\checkmark$
+\item (P5) slots \{0,1\} apoiados: 2 $\ge$ $\lceil$3/2$\rceil$ = 2\ $\checkmark$
+\item (P6) (3,1) $\neq$ (0,1)\ $\checkmark$
+\end{itemize}
+\item $t=1$: $\Move(a,T,2)$ ($L=0$; antes: $a(3,0)$).
+\begin{itemize}
+\item (P1) nada cobre os slots \{3\} no nível 1\ $\checkmark$
+\item (P2) y$\neq$a, 0 $\le$ 2 $\le$ 5, L=0 $\le$ 2\ $\checkmark$
+\item (P3) y = T\ $\checkmark$
+\item (P4) slots \{2\} livres no nível 0\ $\checkmark$
+\item (P5) L = 0 (apoio na mesa)\ $\checkmark$
+\item (P6) (3,0) $\neq$ (2,0)\ $\checkmark$
+\end{itemize}
+\end{itemize}
+Relações $\On$ no estado final: $\On(a,T), \On(b,T), \On(c,T), \On(d,a), \On(d,c)$.
+
+\subsubsection{Situação 1 (extra): $S_0\to S_{f4}$}
+Plano de 4 movimentos. Coincide com os estados $S_0$ a $S_4$ da Situação 3.
+
+Estado inicial: $a(3,0)\ b(5,0)\ c(0,0)\ d(3,1)$. Estado final: $a(0,1)\ b(5,0)\ c(0,0)\ d(2,0)$.
+
+\begin{longtable}{c p{2.6cm} c p{3.4cm} p{3.4cm} p{3.6cm}}
+\toprule $t$ & Ação & P1--P6 & Add & Delete & Estado em $t+1$ \\ \midrule \endhead
+0 & $\Move(d,c,0)$ & $\checkmark$ & $\At(d,0,1),\ \Lev(d,1,1)$ & $\At(d,3,1)$ & $a(3,0)\ b(5,0)\ c(0,0)\ d(0,1)$ \\
+1 & $\Move(a,b,5)$ & $\checkmark$ & $\At(a,5,2),\ \Lev(a,1,2)$ & $\At(a,3,2),\ \Lev(a,0,2)$ & $a(5,1)\ b(5,0)\ c(0,0)\ d(0,1)$ \\
+2 & $\Move(d,T,2)$ & $\checkmark$ & $\At(d,2,3),\ \Lev(d,0,3)$ & $\At(d,0,3),\ \Lev(d,1,3)$ & $a(5,1)\ b(5,0)\ c(0,0)\ d(2,0)$ \\
+3 & $\Move(a,c,0)$ & $\checkmark$ & $\At(a,0,4),\ \Lev(a,1,4)$ & $\At(a,5,4)$ & $a(0,1)\ b(5,0)\ c(0,0)\ d(2,0)$ \\
+\bottomrule \end{longtable}
+\paragraph{Verificação da $\Poss$.}\begin{itemize}
+\item $t=0$: $\Move(d,c,0)$ ($L=1$; antes: $d(3,1)$).
+\begin{itemize}
+\item (P1) nada cobre os slots \{3,4,5\} no nível 2\ $\checkmark$
+\item (P2) y$\neq$d, 0 $\le$ 0 $\le$ 3, L=1 $\le$ 2\ $\checkmark$
+\item (P3) span(d,0) = [0,3) e span(c,0) = [0,2) se sobrepõem\ $\checkmark$
+\item (P4) slots \{0,1,2\} livres no nível 1\ $\checkmark$
+\item (P5) slots \{0,1\} apoiados: 2 $\ge$ $\lceil$3/2$\rceil$ = 2\ $\checkmark$
+\item (P6) (3,1) $\neq$ (0,1)\ $\checkmark$
+\end{itemize}
+\item $t=1$: $\Move(a,b,5)$ ($L=1$; antes: $a(3,0)$).
+\begin{itemize}
+\item (P1) nada cobre os slots \{3\} no nível 1\ $\checkmark$
+\item (P2) y$\neq$a, 0 $\le$ 5 $\le$ 5, L=1 $\le$ 2\ $\checkmark$
+\item (P3) span(a,5) = [5,6) e span(b,5) = [5,6) se sobrepõem\ $\checkmark$
+\item (P4) slots \{5\} livres no nível 1\ $\checkmark$
+\item (P5) slots \{5\} apoiados: 1 $\ge$ $\lceil$1/2$\rceil$ = 1\ $\checkmark$
+\item (P6) (3,0) $\neq$ (5,1)\ $\checkmark$
+\end{itemize}
+\item $t=2$: $\Move(d,T,2)$ ($L=0$; antes: $d(0,1)$).
+\begin{itemize}
+\item (P1) nada cobre os slots \{0,1,2\} no nível 2\ $\checkmark$
+\item (P2) y$\neq$d, 0 $\le$ 2 $\le$ 3, L=0 $\le$ 2\ $\checkmark$
+\item (P3) y = T\ $\checkmark$
+\item (P4) slots \{2,3,4\} livres no nível 0\ $\checkmark$
+\item (P5) L = 0 (apoio na mesa)\ $\checkmark$
+\item (P6) (0,1) $\neq$ (2,0)\ $\checkmark$
+\end{itemize}
+\item $t=3$: $\Move(a,c,0)$ ($L=1$; antes: $a(5,1)$).
+\begin{itemize}
+\item (P1) nada cobre os slots \{5\} no nível 2\ $\checkmark$
+\item (P2) y$\neq$a, 0 $\le$ 0 $\le$ 5, L=1 $\le$ 2\ $\checkmark$
+\item (P3) span(a,0) = [0,1) e span(c,0) = [0,2) se sobrepõem\ $\checkmark$
+\item (P4) slots \{0\} livres no nível 1\ $\checkmark$
+\item (P5) slots \{0\} apoiados: 1 $\ge$ $\lceil$1/2$\rceil$ = 1\ $\checkmark$
+\item (P6) (5,1) $\neq$ (0,1)\ $\checkmark$
+\end{itemize}
+\end{itemize}
+Relações $\On$ no estado final: $\On(a,c), \On(b,T), \On(c,T), \On(d,T)$.
+
+\subsubsection{Situação 2: $S_0\to S_5$}
+Plano de 5 movimentos, que passa pelos estados $S_1$ a $S_4$ do slide.
+
+Estado inicial: $a(0,1)\ b(1,1)\ c(0,0)\ d(3,0)$. Estado final: $a(4,2)\ b(5,2)\ c(4,1)\ d(3,0)$.
+
+\begin{longtable}{c p{2.6cm} c p{3.4cm} p{3.4cm} p{3.6cm}}
+\toprule $t$ & Ação & P1--P6 & Add & Delete & Estado em $t+1$ \\ \midrule \endhead
+0 & $\Move(b,T,2)$ & $\checkmark$ & $\At(b,2,1),\ \Lev(b,0,1)$ & $\At(b,1,1),\ \Lev(b,1,1)$ & $a(0,1)\ b(2,0)\ c(0,0)\ d(3,0)$ \\
+1 & $\Move(a,b,2)$ & $\checkmark$ & $\At(a,2,2),\ \Lev(a,1,2)$ & $\At(a,0,2)$ & $a(2,1)\ b(2,0)\ c(0,0)\ d(3,0)$ \\
+2 & $\Move(c,d,4)$ & $\checkmark$ & $\At(c,4,3),\ \Lev(c,1,3)$ & $\At(c,0,3),\ \Lev(c,0,3)$ & $a(2,1)\ b(2,0)\ c(4,1)\ d(3,0)$ \\
+3 & $\Move(a,c,4)$ & $\checkmark$ & $\At(a,4,4),\ \Lev(a,2,4)$ & $\At(a,2,4),\ \Lev(a,1,4)$ & $a(4,2)\ b(2,0)\ c(4,1)\ d(3,0)$ \\
+4 & $\Move(b,c,5)$ & $\checkmark$ & $\At(b,5,5),\ \Lev(b,2,5)$ & $\At(b,2,5),\ \Lev(b,0,5)$ & $a(4,2)\ b(5,2)\ c(4,1)\ d(3,0)$ \\
+\bottomrule \end{longtable}
+\paragraph{Verificação da $\Poss$.}\begin{itemize}
+\item $t=0$: $\Move(b,T,2)$ ($L=0$; antes: $b(1,1)$).
+\begin{itemize}
+\item (P1) nada cobre os slots \{1\} no nível 2\ $\checkmark$
+\item (P2) y$\neq$b, 0 $\le$ 2 $\le$ 5, L=0 $\le$ 2\ $\checkmark$
+\item (P3) y = T\ $\checkmark$
+\item (P4) slots \{2\} livres no nível 0\ $\checkmark$
+\item (P5) L = 0 (apoio na mesa)\ $\checkmark$
+\item (P6) (1,1) $\neq$ (2,0)\ $\checkmark$
+\end{itemize}
+\item $t=1$: $\Move(a,b,2)$ ($L=1$; antes: $a(0,1)$).
+\begin{itemize}
+\item (P1) nada cobre os slots \{0\} no nível 2\ $\checkmark$
+\item (P2) y$\neq$a, 0 $\le$ 2 $\le$ 5, L=1 $\le$ 2\ $\checkmark$
+\item (P3) span(a,2) = [2,3) e span(b,2) = [2,3) se sobrepõem\ $\checkmark$
+\item (P4) slots \{2\} livres no nível 1\ $\checkmark$
+\item (P5) slots \{2\} apoiados: 1 $\ge$ $\lceil$1/2$\rceil$ = 1\ $\checkmark$
+\item (P6) (0,1) $\neq$ (2,1)\ $\checkmark$
+\end{itemize}
+\item $t=2$: $\Move(c,d,4)$ ($L=1$; antes: $c(0,0)$).
+\begin{itemize}
+\item (P1) nada cobre os slots \{0,1\} no nível 1\ $\checkmark$
+\item (P2) y$\neq$c, 0 $\le$ 4 $\le$ 4, L=1 $\le$ 2\ $\checkmark$
+\item (P3) span(c,4) = [4,6) e span(d,3) = [3,6) se sobrepõem\ $\checkmark$
+\item (P4) slots \{4,5\} livres no nível 1\ $\checkmark$
+\item (P5) slots \{4,5\} apoiados: 2 $\ge$ $\lceil$2/2$\rceil$ = 1\ $\checkmark$
+\item (P6) (0,0) $\neq$ (4,1)\ $\checkmark$
+\end{itemize}
+\item $t=3$: $\Move(a,c,4)$ ($L=2$; antes: $a(2,1)$).
+\begin{itemize}
+\item (P1) nada cobre os slots \{2\} no nível 2\ $\checkmark$
+\item (P2) y$\neq$a, 0 $\le$ 4 $\le$ 5, L=2 $\le$ 2\ $\checkmark$
+\item (P3) span(a,4) = [4,5) e span(c,4) = [4,6) se sobrepõem\ $\checkmark$
+\item (P4) slots \{4\} livres no nível 2\ $\checkmark$
+\item (P5) slots \{4\} apoiados: 1 $\ge$ $\lceil$1/2$\rceil$ = 1\ $\checkmark$
+\item (P6) (2,1) $\neq$ (4,2)\ $\checkmark$
+\end{itemize}
+\item $t=4$: $\Move(b,c,5)$ ($L=2$; antes: $b(2,0)$).
+\begin{itemize}
+\item (P1) nada cobre os slots \{2\} no nível 1\ $\checkmark$
+\item (P2) y$\neq$b, 0 $\le$ 5 $\le$ 5, L=2 $\le$ 2\ $\checkmark$
+\item (P3) span(b,5) = [5,6) e span(c,4) = [4,6) se sobrepõem\ $\checkmark$
+\item (P4) slots \{5\} livres no nível 2\ $\checkmark$
+\item (P5) slots \{5\} apoiados: 1 $\ge$ $\lceil$1/2$\rceil$ = 1\ $\checkmark$
+\item (P6) (2,0) $\neq$ (5,2)\ $\checkmark$
+\end{itemize}
+\end{itemize}
+Relações $\On$ no estado final: $\On(a,c), \On(b,c), \On(c,d), \On(d,T)$.
+
+\subsubsection{Situação 3: $S_0\to S_7$}
+Plano de 6 movimentos: $S_0$$\to$$S_1$$\to$$S_2$$\to$$S_3$$\to$$S_4$$\to$$S_5$$\to$$S_7$ ($S_6$ é igual a $S_5$, sem ação entre eles).
+
+Estado inicial: $a(3,0)\ b(5,0)\ c(0,0)\ d(3,1)$. Estado final: $a(0,1)\ b(1,1)\ c(0,0)\ d(3,0)$.
+
+\begin{longtable}{c p{2.6cm} c p{3.4cm} p{3.4cm} p{3.6cm}}
+\toprule $t$ & Ação & P1--P6 & Add & Delete & Estado em $t+1$ \\ \midrule \endhead
+0 & $\Move(d,c,0)$ & $\checkmark$ & $\At(d,0,1),\ \Lev(d,1,1)$ & $\At(d,3,1)$ & $a(3,0)\ b(5,0)\ c(0,0)\ d(0,1)$ \\
+1 & $\Move(a,b,5)$ & $\checkmark$ & $\At(a,5,2),\ \Lev(a,1,2)$ & $\At(a,3,2),\ \Lev(a,0,2)$ & $a(5,1)\ b(5,0)\ c(0,0)\ d(0,1)$ \\
+2 & $\Move(d,T,2)$ & $\checkmark$ & $\At(d,2,3),\ \Lev(d,0,3)$ & $\At(d,0,3),\ \Lev(d,1,3)$ & $a(5,1)\ b(5,0)\ c(0,0)\ d(2,0)$ \\
+3 & $\Move(a,c,0)$ & $\checkmark$ & $\At(a,0,4),\ \Lev(a,1,4)$ & $\At(a,5,4)$ & $a(0,1)\ b(5,0)\ c(0,0)\ d(2,0)$ \\
+4 & $\Move(b,c,1)$ & $\checkmark$ & $\At(b,1,5),\ \Lev(b,1,5)$ & $\At(b,5,5),\ \Lev(b,0,5)$ & $a(0,1)\ b(1,1)\ c(0,0)\ d(2,0)$ \\
+5 & $\Move(d,T,3)$ & $\checkmark$ & $\At(d,3,6),\ \Lev(d,0,6)$ & $\At(d,2,6)$ & $a(0,1)\ b(1,1)\ c(0,0)\ d(3,0)$ \\
+\bottomrule \end{longtable}
+\paragraph{Verificação da $\Poss$.}\begin{itemize}
+\item $t=0$: $\Move(d,c,0)$ ($L=1$; antes: $d(3,1)$).
+\begin{itemize}
+\item (P1) nada cobre os slots \{3,4,5\} no nível 2\ $\checkmark$
+\item (P2) y$\neq$d, 0 $\le$ 0 $\le$ 3, L=1 $\le$ 2\ $\checkmark$
+\item (P3) span(d,0) = [0,3) e span(c,0) = [0,2) se sobrepõem\ $\checkmark$
+\item (P4) slots \{0,1,2\} livres no nível 1\ $\checkmark$
+\item (P5) slots \{0,1\} apoiados: 2 $\ge$ $\lceil$3/2$\rceil$ = 2\ $\checkmark$
+\item (P6) (3,1) $\neq$ (0,1)\ $\checkmark$
+\end{itemize}
+\item $t=1$: $\Move(a,b,5)$ ($L=1$; antes: $a(3,0)$).
+\begin{itemize}
+\item (P1) nada cobre os slots \{3\} no nível 1\ $\checkmark$
+\item (P2) y$\neq$a, 0 $\le$ 5 $\le$ 5, L=1 $\le$ 2\ $\checkmark$
+\item (P3) span(a,5) = [5,6) e span(b,5) = [5,6) se sobrepõem\ $\checkmark$
+\item (P4) slots \{5\} livres no nível 1\ $\checkmark$
+\item (P5) slots \{5\} apoiados: 1 $\ge$ $\lceil$1/2$\rceil$ = 1\ $\checkmark$
+\item (P6) (3,0) $\neq$ (5,1)\ $\checkmark$
+\end{itemize}
+\item $t=2$: $\Move(d,T,2)$ ($L=0$; antes: $d(0,1)$).
+\begin{itemize}
+\item (P1) nada cobre os slots \{0,1,2\} no nível 2\ $\checkmark$
+\item (P2) y$\neq$d, 0 $\le$ 2 $\le$ 3, L=0 $\le$ 2\ $\checkmark$
+\item (P3) y = T\ $\checkmark$
+\item (P4) slots \{2,3,4\} livres no nível 0\ $\checkmark$
+\item (P5) L = 0 (apoio na mesa)\ $\checkmark$
+\item (P6) (0,1) $\neq$ (2,0)\ $\checkmark$
+\end{itemize}
+\item $t=3$: $\Move(a,c,0)$ ($L=1$; antes: $a(5,1)$).
+\begin{itemize}
+\item (P1) nada cobre os slots \{5\} no nível 2\ $\checkmark$
+\item (P2) y$\neq$a, 0 $\le$ 0 $\le$ 5, L=1 $\le$ 2\ $\checkmark$
+\item (P3) span(a,0) = [0,1) e span(c,0) = [0,2) se sobrepõem\ $\checkmark$
+\item (P4) slots \{0\} livres no nível 1\ $\checkmark$
+\item (P5) slots \{0\} apoiados: 1 $\ge$ $\lceil$1/2$\rceil$ = 1\ $\checkmark$
+\item (P6) (5,1) $\neq$ (0,1)\ $\checkmark$
+\end{itemize}
+\item $t=4$: $\Move(b,c,1)$ ($L=1$; antes: $b(5,0)$).
+\begin{itemize}
+\item (P1) nada cobre os slots \{5\} no nível 1\ $\checkmark$
+\item (P2) y$\neq$b, 0 $\le$ 1 $\le$ 5, L=1 $\le$ 2\ $\checkmark$
+\item (P3) span(b,1) = [1,2) e span(c,0) = [0,2) se sobrepõem\ $\checkmark$
+\item (P4) slots \{1\} livres no nível 1\ $\checkmark$
+\item (P5) slots \{1\} apoiados: 1 $\ge$ $\lceil$1/2$\rceil$ = 1\ $\checkmark$
+\item (P6) (5,0) $\neq$ (1,1)\ $\checkmark$
+\end{itemize}
+\item $t=5$: $\Move(d,T,3)$ ($L=0$; antes: $d(2,0)$).
+\begin{itemize}
+\item (P1) nada cobre os slots \{2,3,4\} no nível 1\ $\checkmark$
+\item (P2) y$\neq$d, 0 $\le$ 3 $\le$ 3, L=0 $\le$ 2\ $\checkmark$
+\item (P3) y = T\ $\checkmark$
+\item (P4) slots \{3,4,5\} livres no nível 0\ $\checkmark$
+\item (P5) L = 0 (apoio na mesa)\ $\checkmark$
+\item (P6) (2,0) $\neq$ (3,0)\ $\checkmark$
+\end{itemize}
+\end{itemize}
+Relações $\On$ no estado final: $\On(a,c), \On(b,c), \On(c,T), \On(d,T)$.

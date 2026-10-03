@@ -1,0 +1,36 @@
+% RASCUNHO da gerencia (Guilherme) para o item 5 -- revisar com Yuri e Gabriel.
+% Contagens obtidas com gerar_cnf.py (versao com cov e ordem parcial).
+\section{Exemplos dos 3 Cenários Codificados para CNF}
+
+Cada cenário vira um arquivo \texttt{.cnf} (as cláusulas) e um \texttt{.map} (o nome de cada variável). O estado inicial e o estado meta entram como cláusulas unitárias nos instantes $0$ e $T$, e as demais cláusulas são as do grupo~3 em diante da seção anterior. O horizonte $T$ usado em cada caso é o comprimento do plano mínimo.
+
+\begin{center}
+\begin{tabular}{l l l c r r}
+\toprule
+Cenário & Estado inicial & Estado meta & $T$ & Variáveis & Cláusulas \\
+\midrule
+Situação 1 ($S_0\to S_{f3}$) & $c(0,0)\ a(3,0)\ b(5,0)\ d(3,1)$ & $c(0,0)\ a(2,0)\ b(5,0)\ d(0,1)$ & 2 & 495 & 17\,648 \\
+Situação 2 ($S_0\to S_5$) & $c(0,0)\ a(0,1)\ b(1,1)\ d(3,0)$ & $c(4,1)\ a(4,2)\ b(5,2)\ d(3,0)$ & 5 & 1\,074 & 42\,893 \\
+Situação 3 ($S_0\to S_7$) & $c(0,0)\ a(3,0)\ b(5,0)\ d(3,1)$ & $c(0,0)\ a(0,1)\ b(1,1)\ d(3,0)$ & 6 & 1\,267 & 51\,308 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Situação 1}
+Estado inicial $S_0$: $c(0,0)\ a(3,0)\ b(5,0)\ d(3,1)$, com $d$ em ponte sobre $a$ e $b$. Meta $S_{f3}$: $c(0,0)\ a(2,0)\ b(5,0)\ d(0,1)$. Horizonte $T=2$.
+O arquivo \texttt{trab01\_blocos2SAT\_situacao1.map} associa, por exemplo, \texttt{480} a \lstinline|move(d,c,0,0)| e \texttt{369} a \lstinline|move(a,T,2,1)|.
+As 16 cláusulas unitárias são as do estado inicial (8, em $t=0$) e as da meta (8, em $t=2$):
+\begin{lstlisting}
+t=0:  at(a,3,0) lev(a,0,0)  at(b,5,0) lev(b,0,0)  at(c,0,0) lev(c,0,0)  at(d,3,0) lev(d,1,0)
+t=2:  at(a,2,2) lev(a,0,2)  at(b,5,2) lev(b,0,2)  at(c,0,2) lev(c,0,2)  at(d,0,2) lev(d,1,2)
+\end{lstlisting}
+As outras três metas da Situação 1 ($S_{f1}$, $S_{f2}$ e $S_{f4}$) são geradas com o terceiro argumento, por exemplo \texttt{python3 gerar\_cnf.py 1 4 f4}.
+
+\subsection{Situação 2}
+Estado inicial $S_0$: $c(0,0)\ a(0,1)\ b(1,1)\ d(3,0)$, com $a$ e $b$ lado a lado sobre $c$. Meta $S_5$: $c(4,1)\ a(4,2)\ b(5,2)\ d(3,0)$, com $c$ sobre $d$ e $a$ e $b$ lado a lado sobre $c$. Horizonte $T=5$.
+
+\subsection{Situação 3}
+Estado inicial $S_0$: o mesmo da Situação 1. Meta $S_7$: $c(0,0)\ a(0,1)\ b(1,1)\ d(3,0)$, com $a$ e $b$ lado a lado sobre $c$ e $d$ na mesa. Horizonte $T=6$. O estado $S_6$ do slide é igual a $S_5$ e não gera ação.
+
+\subsection{Cenário com ordem parcial entre metas}
+O grupo (ORD) acrescenta variáveis e cláusulas só quando há ordem entre metas. Para a Situação 3 com $b(1,1)\prec_P a(0,1)$ e $T=7$, o CNF tem 1\,492 variáveis e 59\,795 cláusulas, contra 1\,267 e 51\,308 do caso sem ordem com $T=6$. O comando é \texttt{python3 gerar\_cnf.py 3 7 --ordem='b(1,1)<a(0,1)'}.

@@ -1,0 +1,62 @@
+% RASCUNHO da gerencia (Guilherme) para o item 5 -- revisar com Yuri e Gabriel.
+\section{Interpretação da Saída do SAT Solver}
+
+\subsection{O minisat não conhece nomes simbólicos}
+O minisat é um resolvedor puramente booleano. Ele devolve \texttt{SAT} (ou \texttt{UNSAT}) e uma lista de inteiros, onde um número positivo é uma variável verdadeira e um negativo é uma variável falsa. Toda a tradução de número para símbolo vem do arquivo \texttt{.map}, que o \texttt{gerar\_cnf.py} escreve junto com o CNF. Sem o \texttt{.map}, a saída é só uma lista de inteiros sem significado para o domínio.
+
+\subsection{Da saída numérica ao plano em português}
+O script \texttt{interpretar.py} executa estes passos:
+\begin{enumerate}
+\item \textbf{Leitura do mapa:} associa cada número ao seu símbolo, por exemplo \texttt{480} $\to$ \lstinline|move(d,c,0,0)|.
+\item \textbf{Filtragem:} mantém os literais positivos. As variáveis \lstinline|move| formam o plano, e as variáveis \lstinline|at| e \lstinline|lev| dão o estado em cada instante.
+\item \textbf{Ordenação temporal:} agrupa as ações por $t$ e traduz cada uma para uma frase em português.
+\item \textbf{Derivação de $\On$:} no estado final, $\On(b,T)$ se $b$ está no nível 0. Caso contrário, $\On(b,y)$ para todo bloco $y$ no nível $l-1$ cujo $\Span$ se sobrepõe ao de $b$. Isso lista, por exemplo, $d$ sobre $a$ e $b$ em ponte, ou $a$ sobre $c$.
+\item \textbf{Verificação independente:} confere cada ação contra as pré-condições P1 a P6 do item 1 e confere se o estado $t+1$ é exatamente o efeito da ação. Essa verificação não usa o CNF, então detecta erro da codificação.
+\end{enumerate}
+
+\subsection{Exemplo: Situação 3}
+Saída do \texttt{interpretar.py} para um plano mínimo da Situação 3 (6 ações). O minisat pode devolver outro plano com o mesmo número de ações; o que deve coincidir é o tamanho e a validade.
+\begin{lstlisting}
+PLANO ENCONTRADO (6 ações):
+1. t=0: mover bloco 'd' para CIMA de 'c' em p=0
+2. t=1: mover bloco 'a' para CIMA de 'b' em p=5
+3. t=2: mover bloco 'd' para a MESA em p=2
+4. t=3: mover bloco 'a' para CIMA de 'c' em p=0
+5. t=4: mover bloco 'b' para CIMA de 'c' em p=1
+6. t=5: mover bloco 'd' para a MESA em p=3
+
+ESTADO FINAL (t=6):
+  a: ponto inicial p=0, nivel l=1
+  b: ponto inicial p=1, nivel l=1
+  c: ponto inicial p=0, nivel l=0
+  d: ponto inicial p=3, nivel l=0
+
+RELACOES 'on' em t=6:
+  a esta sobre: c
+  b esta sobre: c
+  c esta sobre: MESA
+  d esta sobre: MESA
+
+VERIFICAÇÃO INDEPENDENTE (pré-condições P1..P6 do Item 1): plano válido
+\end{lstlisting}
+
+\subsection{Comparação com os planos manuais}
+A comparação é pelo \emph{tamanho} e pela \emph{validade}, e não pela sequência idêntica, porque um mesmo problema pode ter vários planos mínimos. Por exemplo, na Situação 2 o plano manual leva $b$ para a mesa na primeira ação, e um plano igualmente válido de 5 ações começa com $a$ sobre $d$.
+\begin{center}
+\begin{tabular}{l c c c}
+\toprule
+Cenário & Ações no plano manual & $T$ mínimo no SAT & Mesmo tamanho \\
+\midrule
+Situação 1 ($S_{f3}$) & 2 & 2 & sim \\
+Situação 1 ($S_{f4}$) & 4 & 4 & sim \\
+Situação 2 ($S_5$) & 5 & 5 & sim \\
+Situação 3 ($S_7$) & 6 & 6 & sim \\
+\bottomrule
+\end{tabular}
+\end{center}
+Se o SAT desse \texttt{UNSAT} para um $T$ menor do que o plano manual, o resultado seria o esperado, porque o plano manual é um limite superior do menor $T$. Se desse \texttt{SAT} com $T$ menor e o \texttt{interpretar.py} confirmasse o plano como válido, o plano manual não seria mínimo. Se desse \texttt{SAT} e o plano fosse inválido, haveria erro na codificação. Nos quatro cenários da tabela, o menor $T$ do SAT coincide com o do plano manual e o plano devolvido passa na verificação independente.
+
+\paragraph{Exemplo do manual do professor.} O plano de exemplo da seção 6 do manual ($d$ sobre $c$; $a$ para a mesa em $p=4$; $d$ para a mesa em $p=2$; $a$ sobre $c$) não é válido: no terceiro passo, $d$ em $p=2$ cobre os slots 2, 3 e 4, e o slot 4 já está ocupado por $a$ no nível 0. Por isso ele não foi usado como gabarito.
+
+\subsection{Com ordem parcial entre metas}
+Com a opção \texttt{--ordem}, o \texttt{interpretar.py} também confere se a ordem foi respeitada: para cada $\varphi_1\prec_P\varphi_2$, em todo instante em que $\varphi_2$ vale, $\varphi_1$ já valeu. O \texttt{ordem\_parcial.py} imprime, para o plano encontrado, os elos causais $A_i\xrightarrow{\varphi}A_j$ e as restrições de ordem necessárias, como na seção sobre ordem parcial.

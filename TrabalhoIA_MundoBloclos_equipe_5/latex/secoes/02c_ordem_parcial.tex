@@ -1,0 +1,88 @@
+% RESPONSAVEL: gerencia (Guilherme) -- item 4 (ordem parcial). Implementacao: ordem_parcial.py e grupo (ORD) de gerar_cnf.py.
+\subsection{Ordem Parcial}
+
+Um plano linear $A_1,A_2,\dots,A_k$ fixa uma ordem total entre as ações. Um \emph{plano de ordem parcial} fixa apenas as ordens que são necessárias, e deixa livre a ordem das ações independentes. Esta seção formaliza isso para o mundo dos blocos de tamanho variável (itens 1 e 2) e depois trata a ordem parcial entre as \emph{metas}, que é o que entra na codificação em CNF.
+
+\subsubsection{Plano de ordem parcial}
+
+Um plano de ordem parcial é uma tripla $\langle \mathcal{A},\prec,\mathcal{L}\rangle$:
+\begin{itemize}
+\item $\mathcal{A}$ é um conjunto de passos, cada um uma instância $\Move(b,y,p)$;
+\item $\prec$ é uma relação de ordem entre passos: irreflexiva e transitiva, logo sem ciclos. $A_i\prec A_j$ significa que $A_i$ é executado antes de $A_j$;
+\item $\mathcal{L}$ é um conjunto de \emph{elos causais} $A_i\xrightarrow{\varphi}A_j$.
+\end{itemize}
+
+\paragraph{Fatos.} O estado é dado por $\At$ e $\Lev$, e as pré-condições de $\Move$ são derivadas. Os fatos que ligam uma ação à outra são sobre slots:
+\[
+\mathit{livre}(s,l)\equiv\Free(s,l,\cdot,t)=\neg\exists b'.\ \Cov(b',s,l,t)\qquad
+\mathit{ocupado}(s,l)\equiv\neg\mathit{livre}(s,l)
+\]
+
+\paragraph{Pré-condições e efeitos em termos de fatos.} Para $\Move(b,y,p)$, com $b$ antes em $(p_0,l_0)$ e nível-alvo $L$:
+\begin{center}
+\begin{tabular}{l p{9.2cm}}
+\toprule
+Pré-condição & Fatos exigidos \\
+\midrule
+(P1) $\Clr(b,t)$ & $\mathit{livre}(s,l_0+1)$ para todo $s\in\Span(b,p_0)$, porque $\Clr(b,t)\leftrightarrow\forall s\in\Span(b,p_0).\ \Free(s,l_0+1,b,t)$ \\
+(P4) destino livre & $\mathit{livre}(s,L)$ para todo $s\in\Span(b,p)$ (exceto os slots que o próprio $b$ já ocupa nesse nível) \\
+(P5) estabilidade & $\mathit{ocupado}(s,L-1)$ para os slots de $\Span(b,p)$ que servem de apoio \\
+\midrule
+Efeito & Produz $\mathit{livre}(s,l_0)$ para $s\in\Span(b,p_0)$ e $\mathit{ocupado}(s,L)$ para $s\in\Span(b,p)$; desfaz os fatos contrários \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Elo causal.} $A_i\xrightarrow{\varphi}A_j$ significa que $A_i$ produz o fato $\varphi$, $A_j$ exige $\varphi$ como pré-condição e $\varphi$ vale em todo instante entre os dois. O elo impõe $A_i\prec A_j$.
+
+\paragraph{Ameaça e resolução.} Um passo $A_k$ \emph{ameaça} o elo $A_i\xrightarrow{\varphi}A_j$ se desfaz $\varphi$ e pode ser executado entre $A_i$ e $A_j$. Por exemplo, se $A_i$ libera um slot para $A_j$, qualquer ação que ocupe esse slot é uma ameaça. A ameaça é resolvida por \emph{promoção} ($A_k\prec A_i$) ou \emph{rebaixamento} ($A_j\prec A_k$). Em um plano totalmente ordenado não há ameaças, porque a ordem já resolve todas.
+
+\paragraph{Linearização e correção.} Uma linearização é uma ordem total compatível com $\prec$. O plano de ordem parcial é correto se toda linearização é executável (cada ação satisfaz P1 a P6 no seu momento) e termina no estado meta. A execução manual abaixo testa isso por simulação.
+
+\subsubsection{Execução manual: planos do item 3 como ordem parcial}
+
+Para cada plano manual do item 3, calculamos os elos causais pelos efeitos de cada ação (colunas Add e Delete do item 3) e testamos todas as ordens de execução das mesmas ações. O script \texttt{ordem\_parcial.py} automatiza as duas etapas.
+
+\begin{center}
+\begin{tabular}{l p{3.6cm} p{8.4cm}}
+\toprule
+Plano & Passos & Elos causais $A_i\xrightarrow{\varphi}A_j$ \\
+\midrule
+Sit.\ 1 ($S_{f3}$) & $A_1=\Move(d,c,0)$, $A_2=\Move(a,T,2)$ & $A_1\xrightarrow{\mathit{livre}(3,1)}A_2$ \\
+\midrule
+Sit.\ 1 ($S_{f4}$) & $A_1=\Move(d,c,0)$, $A_2=\Move(a,b,5)$, $A_3=\Move(d,T,2)$, $A_4=\Move(a,c,0)$ &
+$A_1\xrightarrow{\mathit{livre}(3,1),\,\mathit{livre}(5,1)}A_2$,\ $A_2\xrightarrow{\mathit{livre}(3,0)}A_3$,\ $A_3\xrightarrow{\mathit{livre}(0,1)}A_4$ \\
+\midrule
+Sit.\ 2 ($S_5$) & $A_1=\Move(b,T,2)$, $A_2=\Move(a,b,2)$, $A_3=\Move(c,d,4)$, $A_4=\Move(a,c,4)$, $A_5=\Move(b,c,5)$ &
+$A_1\xrightarrow{\mathit{ocupado}(2,0)}A_2$,\ $A_1\xrightarrow{\mathit{livre}(1,1)}A_3$,\ $A_2\xrightarrow{\mathit{livre}(0,1)}A_3$,\ $A_3\xrightarrow{\mathit{ocupado}(4,1)}A_4$,\ $A_3\xrightarrow{\mathit{ocupado}(5,1)}A_5$,\ $A_4\xrightarrow{\mathit{livre}(2,1)}A_5$ \\
+\midrule
+Sit.\ 3 ($S_7$) & $A_1=\Move(d,c,0)$, $A_2=\Move(a,b,5)$, $A_3=\Move(d,T,2)$, $A_4=\Move(a,c,0)$, $A_5=\Move(b,c,1)$, $A_6=\Move(d,T,3)$ &
+$A_1\xrightarrow{\mathit{livre}(3,1),\,\mathit{livre}(5,1)}A_2$,\ $A_1\xrightarrow{\mathit{livre}(3,1),\,\mathit{livre}(4,1)}A_6$,\ $A_2\xrightarrow{\mathit{livre}(3,0)}A_3$,\ $A_3\xrightarrow{\mathit{livre}(0,1)}A_4$,\ $A_3\xrightarrow{\mathit{livre}(1,1)}A_5$,\ $A_3\xrightarrow{\mathit{livre}(2,1)}A_6$,\ $A_4\xrightarrow{\mathit{livre}(5,1)}A_5$,\ $A_5\xrightarrow{\mathit{livre}(5,0)}A_6$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Resultado.} Nos quatro planos, as restrições de ordem necessárias formam uma cadeia $A_1\prec A_2\prec\dots\prec A_k$, e só existe uma ordem de execução válida das mesmas ações. Cada ação libera ou ocupa exatamente o espaço que a seguinte precisa, então não há ações independentes. Com os blocos e as metas dessas situações, o plano mínimo é uma cadeia. Os $A_i\prec A_j$ que não são consecutivos, como $A_1\prec A_6$ na Situação 3, já decorrem da transitividade da cadeia.
+
+\subsubsection{Ordem parcial entre metas}
+
+O enunciado pede que a solução considere ordem parcial, $A\xrightarrow{P}B$, e o manual do professor indica como codificá-la: ligar metas por $\varphi_1\prec_P\varphi_2$. Uma \emph{meta atômica} é $b(p,l)$, isto é, $\At(b,p)\land\Lev(b,l)$. Definimos
+\[
+\mathit{Ach}(\varphi,t)\leftrightarrow\exists t'\le t.\ \varphi(t')
+\qquad
+\varphi_1\prec_P\varphi_2\ \Longleftrightarrow\ \forall t.\ \bigl(\varphi_2(t)\rightarrow\mathit{Ach}(\varphi_1,t)\bigr)
+\]
+Em palavras, a meta $\varphi_2$ só pode valer num instante em que $\varphi_1$ já valeu antes ou naquele instante. Metas sem relação entre si ficam livres. A relação $\prec_P$ entre metas é irreflexiva e transitiva, como $\prec$ entre passos. Na prática, o plano deve alcançar $\varphi_1$ antes de alcançar $\varphi_2$.
+
+\paragraph{Exemplo (Situação 3).} As metas são $c(0,0)$, $d(3,0)$, $a(0,1)$ e $b(1,1)$.
+\begin{itemize}
+\item Com $a(0,1)\prec_P b(1,1)$ (colocar $a$ antes de $b$), o plano mínimo continua com 6 ações, o mesmo do item 3, que já respeita essa ordem: $a(0,1)$ passa a valer em $t=4$ e $b(1,1)$ em $t=5$.
+\item Com $b(1,1)\prec_P a(0,1)$ (colocar $b$ antes de $a$), não existe plano com 5 nem com 6 ações. O plano mínimo passa a ter 7: $b(1,1)$ passa a valer em $t=5$ e $a(0,1)$ em $t=6$. No plano encontrado, o bloco $a$ está sobre $b$ e precisa sair de cima dele antes de $b$ subir. Ele fica temporariamente sobre $d$ e só depois vai para $c$, o que custa uma ação a mais.
+\end{itemize}
+Os tamanhos 5, 6 e 7 vêm da execução do SAT solver para $T=5,6,7$ (seção~\ref{sec:resultados}); o plano de 7 ações foi conferido contra as pré-condições P1 a P6.
+
+\paragraph{Plano de 7 ações como ordem parcial.} O plano com 7 ações é um caso em que os elos causais deixam ações livres. Para o plano devolvido pelo SAT, $A_1=\Move(d,c,0)$, $A_2=\Move(a,b,5)$, $A_3=\Move(d,T,2)$, $A_4=\Move(a,d,2)$, $A_5=\Move(b,c,1)$, $A_6=\Move(a,c,0)$ e $A_7=\Move(d,T,3)$, as restrições necessárias são
+\[
+A_1\prec A_2,\ A_1\prec A_4,\ A_2\prec A_3,\ A_3\prec A_5,\ A_3\prec A_6,\ A_4\prec A_5,\ A_4\prec A_6,\ A_5\prec A_7,\ A_6\prec A_7
+\]
+Existem 3 ordens de execução fisicamente válidas. Só uma delas, $A_1A_2A_3A_4A_5A_6A_7$, executa $A_5$ antes de $A_6$, como a meta $b(1,1)\prec_P a(0,1)$ exige. Assim, a ordem parcial entre metas funciona como uma restrição extra, $A_5\prec A_6$, que escolhe uma entre as ordens permitidas pelos elos causais.

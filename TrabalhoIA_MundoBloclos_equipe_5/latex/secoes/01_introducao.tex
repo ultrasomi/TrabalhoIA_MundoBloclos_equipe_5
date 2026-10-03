@@ -1,0 +1,46 @@
+% RESPONSAVEL: gerencia (Guilherme e colega)
+\section{Introdu\c{c}\~ao ao Problema}
+
+O Mundo dos Blocos \'e um dom\'inio cl\'assico de planejamento em Intelig\^encia Artificial.
+Dado um estado inicial e um estado objetivo, o problema \'e encontrar uma sequ\^encia de a\c{c}\~oes que leve de um ao outro.
+Na vers\~ao cl\'assica, todos os blocos t\^em o mesmo tamanho e cada bloco ocupa exatamente uma posi\c{c}\~ao.
+Neste trabalho estendemos o dom\'inio para blocos de \emph{comprimentos diferentes}, dispostos sobre uma mesa com pontos discretos e empilh\'aveis em n\'iveis.
+
+\subsection{O dom\'inio}
+
+Temos quatro blocos $a$, $b$, $c$ e $d$, com comprimentos $\ell(a)=\ell(b)=1$, $\ell(c)=2$ e $\ell(d)=3$.
+A mesa \'e um segmento com os pontos inteiros de $0$ a $6$, o que d\'a seis \emph{slots} unit\'arios, $s_i=[i,i+1]$ para $i\in\{0,\dots,5\}$.
+Um bloco come\c{c}a em um ponto $p$ e cobre $\ell(b)$ slots consecutivos. Os blocos podem ficar sobre a mesa (n\'ivel $0$) ou sobre outros blocos (n\'iveis acima).
+
+Essa extens\~ao traz quatro caracter\'isticas que o caso simples n\~ao tem:
+\begin{itemize}
+\item \textbf{Tamanhos diferentes:} um bloco pode cobrir mais de um slot e se apoiar em mais de um bloco.
+\item \textbf{Espa\c{c}os vazios:} o bloco do n\'ivel de cima pode ficar em ponte sobre dois blocos de baixo, deixando um slot vazio entre eles.
+\item \textbf{Movimentos laterais:} al\'em de subir e descer, um bloco pode deslizar na horizontal, ent\~ao a posi\c{c}\~ao em que ele \'e colocado importa.
+\item \textbf{Equil\'ibrio:} um bloco maior sobre um menor s\'o \'e aceito se tiver apoio suficiente por baixo. A regra adotada exige apoio em pelo menos $\lceil \ell(b)/2\rceil$ dos slots que o bloco cobre.
+\end{itemize}
+
+\subsection{Objetivo do trabalho}
+
+O objetivo \'e propor uma representa\c{c}\~ao do conhecimento para esse dom\'inio e us\'a-la em racioc\'inio automatizado para gerar planos.
+O trabalho segue as etapas abaixo, na ordem em que o enunciado pede.
+\begin{enumerate}
+\item Representar o dom\'inio em L\'ogica de Primeira Ordem (LPO), com os predicados, as leis do dom\'inio e a a\c{c}\~ao $\Move$.
+\item Indicar, para cada elemento da representa\c{c}\~ao, o que a a\c{c}\~ao adiciona ou remove (adds e deletes).
+\item Usar a representa\c{c}\~ao para obter, manualmente, os planos de cada cen\'ario.
+\item Considerar ordem parcial entre as metas, na forma $A \xrightarrow{P} B$.
+\item Somente depois, codificar a solu\c{c}\~ao de LPO para l\'ogica proposicional (CNF), gerar os planos com um SAT solver e compar\'a-los com os planos manuais.
+\end{enumerate}
+
+\subsection{As tr\^es situa\c{c}\~oes}
+
+O enunciado define tr\^es situa\c{c}\~oes sobre o mesmo conjunto de blocos.
+Na Situa\c{c}\~ao 1, parte-se do estado inicial $S_0$ e o plano deve chegar a um dos estados objetivo $S_{f1}$, $S_{f2}$, $S_{f3}$ ou $S_{f4}$.
+Na Situa\c{c}\~ao 2, o plano vai de $S_0$ at\'e $S_5$.
+Na Situa\c{c}\~ao 3, o plano vai de $S_0$ at\'e $S_7$.
+Em todas elas a \'unica a\c{c}\~ao dispon\'ivel \'e $\Move(b,y,p)$, que move o bloco $b$ para cima de $y$ (outro bloco ou a mesa $T$) come\c{c}ando no ponto $p$.
+
+\subsection{Organiza\c{c}\~ao do documento}
+
+A Se\c{c}\~ao 2 apresenta a descri\c{c}\~ao formal do dom\'inio (itens 1, 2 e 4) e a execu\c{c}\~ao manual das tr\^es situa\c{c}\~oes (item 3).
+As Se\c{c}\~oes 3 a 7 tratam da codifica\c{c}\~ao em CNF e do uso do SAT solver (item 5): as vari\'aveis e cl\'ausulas, os tr\^es cen\'arios codificados, o mapeamento entre a descri\c{c}\~ao formal e o c\'odigo, a execu\c{c}\~ao passo a passo e a interpreta\c{c}\~ao da sa\'ida do solver.

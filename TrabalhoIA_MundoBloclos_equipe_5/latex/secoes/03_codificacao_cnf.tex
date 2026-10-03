@@ -1,0 +1,109 @@
+% RASCUNHO da gerencia (Guilherme) para o item 5 -- revisar com Yuri e Gabriel.
+% Descreve a codificacao feita por gerar_cnf.py (versao com as correcoes de estabilidade e de nivel maximo).
+\section{Codificação CNF}
+
+Para um horizonte de $T$ passos, o problema de planejamento vira um problema de satisfatibilidade:
+existem os instantes $0,1,\dots,T$ e as ações ocorrem nos instantes $0,\dots,T-1$.
+A fórmula é satisfatível se e somente se existe um plano com exatamente $T$ ações que leva do estado inicial ao estado meta.
+Cada ação $\Move(b,y,p)$ do item 2 vira uma variável $\mathit{mv}(b,y,p,t)$, e cada predicado da representação em LPO vira uma família de variáveis proposicionais indexadas pelo instante.
+
+\subsection{Variáveis proposicionais}
+
+Sejam $B=\{a,b,c,d\}$, os pontos $0,\dots,6$, os slots $0,\dots,5$ e os níveis $0,1,2$.
+\begin{center}
+\begin{tabular}{p{3.6cm} p{6.6cm} p{3.4cm}}
+\toprule
+Variável & Índices & Quantidade \\
+\midrule
+$\At(b,p,t)$ & $b\in B$, $p\in[0,6-\ell(b)]$, $t\in[0,T]$ & $21\,(T+1)$ \\
+$\Lev(b,l,t)$ & $b\in B$, $l\in[0,2]$, $t\in[0,T]$ & $12\,(T+1)$ \\
+$\Clr(b,t)$ & $b\in B$, $t\in[0,T]$ & $4\,(T+1)$ \\
+$\Cov(b,s,l,t)$ & $b\in B$, $s\in[0,5]$, $l\in[0,2]$, $t\in[0,T]$ & $72\,(T+1)$ \\
+$\mathit{mv}(b,y,p,t)$ & $b\in B$, $y\in (B\setminus\{b\})\cup\{T\}$, $p\in[0,6-\ell(b)]$, $t\in[0,T-1]$ & $84\,T$ \\
+\midrule
+\multicolumn{2}{l}{Total} & $193\,T+109$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+Para $T=2$, $T=5$ e $T=6$ isso dá 495, 1074 e 1267 variáveis.
+
+Os predicados $\Free$, $\Stable$, $\Span$ e $\Overlap$ não viram variáveis: o gerador os expande diretamente em cláusulas. A relação $\On$ também não é codificada (seção~\ref{sec:on}).
+A variável $\Cov$ foi acrescentada em relação à tabela do manual do professor: ela permite exigir que o apoio de um bloco esteja no nível imediatamente abaixo dele, e não em qualquer nível.
+Quando há ordem parcial entre metas (grupo 11), entram duas variáveis por meta atômica e por instante, $\mathit{hold}(b,p,l,t)$ e $\mathit{ach}(b,p,l,t)$, isto é, $2(T+1)$ por meta.
+
+\subsection{Grupos de cláusulas}
+
+Em todos os grupos, $t$ percorre os instantes em que a regra vale. Os grupos 1 a 6 descrevem os estados, os grupos 7 a 10 descrevem as ações e o grupo 11, opcional, trata a ordem parcial entre metas.
+
+\begin{enumerate}
+\item \textbf{Estado inicial.} Para cada bloco $b$ com $b(p_0,l_0)$ no estado inicial, as cláusulas unitárias $\At(b,p_0,0)$ e $\Lev(b,l_0,0)$.
+\item \textbf{Meta.} Para cada bloco $b$ com $b(p_f,l_f)$ no estado meta, as cláusulas unitárias $\At(b,p_f,T)$ e $\Lev(b,l_f,T)$.
+\item \textbf{Unicidade de posição e de nível} (leis U1 e U2). Para cada $b$ e $t$:
+\[
+\bigvee_{p}\At(b,p,t)\qquad \neg\At(b,p_1,t)\lor\neg\At(b,p_2,t)\ (p_1<p_2)
+\]
+e o análogo para $\Lev$ com $l\in\{0,1,2\}$.
+\item \textbf{Definição de $\Cov$.} Para cada $b$, $s$, $l$ e $t$, com $P_s=\{p : p\le s<p+\ell(b)\}$:
+\begin{align*}
+&\Cov(b,s,l,t)\rightarrow\Lev(b,l,t)\\
+&\Cov(b,s,l,t)\rightarrow\bigvee_{p\in P_s}\At(b,p,t)\\
+&\At(b,p,t)\land\Lev(b,l,t)\rightarrow\Cov(b,s,l,t)\qquad(p\in P_s)
+\end{align*}
+\item \textbf{Exclusão horizontal} (lei E). Para blocos distintos $b,b'$, posições $p,q$ com $\Overlap(b,p,b',q)$ e todo nível $l$:
+\[
+\neg\At(b,p,t)\lor\neg\Lev(b,l,t)\lor\neg\At(b',q,t)\lor\neg\Lev(b',l,t)
+\]
+\item \textbf{Clear.} Se $\Clr(b,t)$ vale, nenhum outro bloco $z$ está no nível seguinte sobreposto a $b$. Para $\Overlap(b,p,z,q)$ e $l<2$:
+\begin{align*}
+\neg\Clr(b,t)\lor\neg\At(b,p,t)\lor\neg\Lev(b,l,t)\lor\neg\At(z,q,t)\lor\neg\Lev(z,l+1,t)
+\end{align*}
+O gerador escreve também cláusulas na direção contrária, mas elas não são necessárias para a correção: $\Clr$ só aparece como pré-condição de $\Move$, e o solver pode escolher $\Clr(b,t)$ verdadeiro sempre que nada está sobre $b$.
+\item \textbf{Ação única por instante.} Para cada $t\in[0,T-1]$, pelo menos uma variável $\mathit{mv}(\cdot,t)$ é verdadeira, e para cada par de ações distintas $\neg\mathit{mv}_1\lor\neg\mathit{mv}_2$.
+\item \textbf{Pré-condições de $\Move$.} Para cada $\mathit{mv}(b,y,p,t)$, com $L=0$ se $y=T$ e $L=l_y+1$ caso contrário:
+\begin{itemize}
+\item[(P1)] $\mathit{mv}(b,y,p,t)\rightarrow\Clr(b,t)$.
+\item[(P2)] $y\neq b$ e $0\le p\le 6-\ell(b)$ já valem pelo domínio das variáveis. O limite $L\le 2$ vira $\mathit{mv}(b,y,p,t)\rightarrow\neg\Lev(y,2,t)$.
+\item[(P3)] Se $y\neq T$, para cada posição $q$ de $y$ sem sobreposição: $\neg\mathit{mv}(b,y,p,t)\lor\neg\Lev(y,l_y,t)\lor\neg\At(y,q,t)$.
+\item[(P4)] Para cada outro bloco $z$ e posição $q$ com $\Overlap(b,p,z,q)$: $\neg\mathit{mv}(b,y,p,t)\lor\neg\Lev(y,l_y,t)\lor\neg\At(z,q,t)\lor\neg\Lev(z,L,t)$. Para $y=T$, o mesmo com $L=0$ e sem a parcela de $y$.
+\item[(P5)] Estabilidade, descrita a seguir.
+\item[(P6)] $\neg\mathit{mv}(b,y,p,t)\lor\neg\At(b,p,t)\lor\neg\Lev(y,l_y,t)\lor\neg\Lev(b,L,t)$, o que evita ações que não mudam o estado.
+\end{itemize}
+\item \textbf{Efeitos de $\Move$.} $\mathit{mv}(b,y,p,t)\rightarrow\At(b,p,t+1)$, e $\mathit{mv}(b,y,p,t)\land\Lev(y,l_y,t)\rightarrow\Lev(b,l_y+1,t+1)$. Para $y=T$, $\mathit{mv}(b,T,p,t)\rightarrow\Lev(b,0,t+1)$.
+\item \textbf{Frame axioms.} Para $b'\neq b$, $\mathit{mv}(b,y,p,t)\land\At(b',p',t)\rightarrow\At(b',p',t+1)$ e $\mathit{mv}(b,y,p,t)\land\Lev(b',l',t)\rightarrow\Lev(b',l',t+1)$.
+\item \textbf{Ordem parcial entre metas (opcional).} Para cada relação $\varphi_1\prec_P\varphi_2$, com metas atômicas $\varphi=b(p,l)$, cláusulas que dizem que $\varphi_2$ só vale em $t$ se $\varphi_1$ já valeu em algum $t'\le t$:
+\begin{align*}
+&\mathit{hold}(\varphi,t)\rightarrow\At(b,p,t) \qquad \mathit{hold}(\varphi,t)\rightarrow\Lev(b,l,t) \qquad \At(b,p,t)\land\Lev(b,l,t)\rightarrow\mathit{hold}(\varphi,t)\\
+&\mathit{ach}(\varphi,0)\rightarrow\mathit{hold}(\varphi,0) \qquad \mathit{ach}(\varphi,t)\rightarrow\mathit{ach}(\varphi,t-1)\lor\mathit{hold}(\varphi,t)\ (t\ge 1)\\
+&\mathit{hold}(\varphi_2,t)\rightarrow\mathit{ach}(\varphi_1,t)\qquad(t\in[0,T])
+\end{align*}
+Basta a direção ``$\mathit{ach}$ implica que já valeu'': como $\mathit{ach}$ só aparece positivo na última cláusula, o solver só consegue torná-lo verdadeiro se $\varphi_1$ de fato valeu antes. É o que o manual do professor descreve como $\neg\varphi_2(t)\lor\varphi_1(t')$ para algum $t'\le t$.
+\end{enumerate}
+
+\subsection{Estabilidade em cláusulas}
+
+A condição (P5) exige que pelo menos $k=\lceil\ell(b)/2\rceil$ dos $n=\ell(b)$ slots sob $b$ estejam apoiados no nível $l_y$.
+``Pelo menos $k$ de $n$ slots apoiados'' equivale a ``todo subconjunto de $n-k+1$ slots tem algum slot apoiado''. Então, para cada subconjunto $S$ de $n-k+1$ slots de $\Span(b,p)$:
+\[
+\neg\mathit{mv}(b,y,p,t)\lor\neg\Lev(y,l_y,t)\lor\bigvee_{s\in S}\ \bigvee_{z\neq b}\Cov(z,s,l_y,t)
+\]
+Para $b=d$ ($n=3$, $k=2$) são três cláusulas, uma para cada par de slots. Para $a$, $b$ e $c$ ($k=1$ e $n-k+1=n$) é uma cláusula só, e ela exige apoio em algum dos slots sob o bloco.
+Quando o destino é a mesa ($y=T$), não há cláusula de estabilidade.
+
+\subsection{Como ADD e DELETE aparecem na codificação}
+
+O ADD do item 2 são as cláusulas de efeito do grupo 9. Não existe cláusula de DELETE explícita: a posição e o nível anteriores deixam de valer porque as cláusulas de unicidade (grupo 3) proíbem duas posições ou dois níveis para o mesmo bloco no mesmo instante.
+Isso é coerente com a regra do item 2 de só apagar o que muda: se $p_0=p$, o $\At$ novo e o antigo são o mesmo átomo e continuam verdadeiros.
+
+\subsection{A relação $\On$ é derivada}\label{sec:on}
+
+Não criamos variáveis para $\On(b,y,t)$. A relação é reconstruída depois, a partir do modelo do SAT solver:
+\[
+\On(b,y,t)\leftrightarrow\exists s,l.\ \Cov(b,s,l,t)\land\Cov(y,s,l-1,t)\qquad
+\On(b,T,t)\leftrightarrow\Lev(b,0,t)
+\]
+Isso mantém o número de variáveis menor, e o script \texttt{interpretar.py} faz a reconstrução ao apresentar o plano.
+
+\subsection{Horizonte e plano mínimo}
+
+Como cada instante tem exatamente uma ação, a fórmula para $T$ é satisfatível quando existe plano de exatamente $T$ ações.
+Para achar o plano mais curto, executa-se o SAT solver com $T=1,2,3,\dots$ e para-se no primeiro $T$ satisfatível. Esse $T$ é o comprimento mínimo do plano, porque os valores menores deram insatisfatível.

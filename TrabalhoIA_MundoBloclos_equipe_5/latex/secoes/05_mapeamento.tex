@@ -1,0 +1,45 @@
+% RASCUNHO da gerencia (Guilherme) para o item 5 -- revisar com Yuri e Gabriel.
+% Os trechos de codigo sao identificados pelos comentarios de gerar_cnf.py, e nao por numero de linha.
+\section{Mapeamento: Descrição Formal $\to$ Código}
+
+A tabela liga cada elemento da descrição formal (itens 1 e 2) ao trecho correspondente de \texttt{gerar\_cnf.py}. Os blocos do código são identificados pelos comentários do próprio arquivo.
+
+\begin{longtable}{p{5.2cm} p{9.6cm}}
+\toprule
+Regra formal & Código Python (\texttt{gerar\_cnf.py}) \\
+\midrule \endhead
+Blocos e comprimentos $\ell(b)$ & \lstinline|BLOCKS = {"a":1, "b":1, "c":2, "d":3}| \\
+Pontos do eixo e nível máximo & \lstinline|MAX_POINT = 6|, \lstinline|MAX_LEVEL = 2| \\
+Posições válidas $p\in[0,6-\ell(b)]$ & \lstinline|positions(b)| \\
+$\Overlap(b,p,y,q)$ & \lstinline|overlap(b, p, y, q)| \\
+$\At$, $\Lev$, $\Clr$, $\Cov$, $\mathit{mv}$ & dicionários \lstinline|at|, \lstinline|lev|, \lstinline|clr|, \lstinline|cov|, \lstinline|mv|, criados com \lstinline|C.new_var(...)| \\
+Estado inicial e meta (grupos 1 e 2) & bloco \lstinline|# Estado inicial e estado meta| \\
+Unicidade de posição e nível, U1 e U2 (grupo 3) & bloco \lstinline|# (A,B)| \\
+Definição de $\Cov$ (grupo 4) & bloco \lstinline|# (COV)| \\
+Exclusão horizontal, lei E (grupo 5) & bloco \lstinline|# (C)| \\
+$\Clr$ (grupo 6) & bloco \lstinline|# (E)| \\
+Ação única por instante (grupo 7) & início do laço \texttt{\# Uma a\c{c}\~ao por instante...} \\
+P1: $\Clr(b,t)$ & \lstinline|C.add(-v, clr[b, t])| \\
+P2: $L\le 2$ & \lstinline|C.add(-v, -lev[y, MAX_LEVEL, t])| \\
+P3: sobreposição com o apoio & laço \lstinline|for q in positions(y): if not overlap(...)| \\
+P4: $\Free$ nos slots de destino & trechos \lstinline|# Destino na mesa...| e \texttt{\# N\~ao coincidir horizontalmente...} \\
+P5: $\Stable$ & bloco \lstinline|# Estabilidade...|, com \lstinline|itertools.combinations(slots, r)| e \lstinline|cov[z, s, ly, t]| \\
+P6: $\neg(\At\land\Lev)$ & bloco \lstinline|# Evita no-op...| \\
+Efeitos ADD de $\Move$ (grupo 9) & \lstinline|C.add(-v, at[b, p, t+1])| e \lstinline|C.add(-v, lev[b, ..., t+1])| \\
+DELETE & não há código: vem da unicidade, bloco \lstinline|# (A,B)| \\
+Persistência (grupo 10) & bloco \lstinline|# Frame axioms...| \\
+Ordem parcial entre metas (grupo 11) & bloco \lstinline|# (ORD)|, com as variáveis \lstinline|ach| e \lstinline|hold|; opção \texttt{--ordem} lida por \lstinline|ler_ordem(...)| \\
+Metas da Situação 1 ($S_{f1}$ a $S_{f4}$) & dicionário \lstinline|METAS_SITUACAO1| \\
+Plano mínimo (menor $T$ satisfatível) & \texttt{buscar\_plano.py}, laço sobre $T=1,2,\dots$ \\
+Verificação independente de P1 a P6 & \texttt{interpretar.py}, função \texttt{validar\_plano} \\
+Elos causais e ordem parcial do plano & \texttt{ordem\_parcial.py} \\
+$\On(b,y,t)$ derivado & \texttt{interpretar.py}, função \texttt{derivar\_on} \\
+\bottomrule
+\end{longtable}
+
+\subsection{Diferenças em relação ao manual do professor}
+\begin{itemize}
+\item O manual exige $\Clr(y)$ na pré-condição de $\Move$. Aqui a exigência foi trocada por $\Free$ por slot (P4), como no item 1. Sem isso, as transições $S_4\to S_5$ das Situações 2 e 3 seriam impossíveis.
+\item Foi acrescentada a variável $\Cov$, para que o apoio da estabilidade seja contado no nível certo.
+\item O resultado do SAT solver é lido com o arquivo \texttt{.map}, que associa cada número de variável ao seu símbolo, como $\mathit{mv}(d,c,0,0)$.
+\end{itemize}

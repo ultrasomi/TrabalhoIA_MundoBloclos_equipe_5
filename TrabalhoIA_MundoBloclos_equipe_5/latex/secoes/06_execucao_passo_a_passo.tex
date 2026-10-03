@@ -1,0 +1,51 @@
+% RASCUNHO da gerencia (Guilherme) para o item 5 -- revisar com Yuri e Gabriel.
+\section{Execução Passo a Passo}\label{sec:resultados}
+
+Requisitos: Python 3 e o \texttt{minisat} no PATH. Os arquivos ficam todos na mesma pasta.
+
+\subsection{Uma situação, passo a passo}
+\begin{enumerate}
+\item \textbf{Gerar o CNF e o mapa.} O primeiro argumento é a situação e o segundo é o horizonte $T$.
+\begin{lstlisting}
+python3 gerar_cnf.py 3 6
+\end{lstlisting}
+Saída: \texttt{Situação 3 (T=6): 1267 variáveis, 51308 cláusulas}. Arquivos gerados: \texttt{trab01\_blocos2SAT\_situacao3.cnf} e \texttt{trab01\_blocos2SAT\_situacao3.map}.
+\item \textbf{Executar o minisat.}
+\begin{lstlisting}
+minisat trab01_blocos2SAT_situacao3.cnf resultado3.txt
+\end{lstlisting}
+O minisat escreve em \texttt{resultado3.txt} a palavra \texttt{SAT} seguida da lista de literais, ou \texttt{UNSAT}.
+\item \textbf{Interpretar o resultado.} O script usa o \texttt{.map} correspondente.
+\begin{lstlisting}
+python3 interpretar.py resultado3.txt --verbose
+\end{lstlisting}
+\end{enumerate}
+
+\subsection{Plano mínimo automático}
+O comando \texttt{python3 buscar\_plano.py 3} repete os passos acima com $T=1,2,3,\dots$ e para no primeiro \texttt{SATISFIABLE}. Esse $T$ é o comprimento mínimo do plano, porque os valores menores deram \texttt{UNSATISFIABLE}. O script grava o \texttt{resultado3.txt} do último $T$ e chama o \texttt{interpretar.py}.
+
+\subsection{Horizontes testados}
+O resultado esperado, que é uma propriedade do problema e não do solver, é:
+\begin{center}
+\begin{tabular}{l l l l}
+\toprule
+Cenário & \texttt{UNSAT} para & \texttt{SAT} em & Plano mínimo \\
+\midrule
+Situação 1 ($S_{f3}$) & $T=1$ & $T=2$ & 2 ações \\
+Situação 1 ($S_{f4}$) & $T=1,2,3$ & $T=4$ & 4 ações \\
+Situação 2 ($S_5$) & $T=1,\dots,4$ & $T=5$ & 5 ações \\
+Situação 3 ($S_7$) & $T=1,\dots,5$ & $T=6$ & 6 ações \\
+\bottomrule
+\end{tabular}
+\end{center}
+Para $S_{f1}$ e $S_{f2}$ da Situação 1, a busca em largura sobre os 2\,032 estados alcançáveis dá planos mínimos de 8 e 9 ações. Elas são geradas com \texttt{python3 buscar\_plano.py 1 f1} e \texttt{python3 buscar\_plano.py 1 f2}.
+
+\subsection{Com ordem parcial entre metas}
+A ordem entre metas entra com a opção \texttt{--ordem}. Na Situação 3, exigir $b(1,1)$ antes de $a(0,1)$ dá $T=5$ e $T=6$ \texttt{UNSAT} e $T=7$ \texttt{SAT}:
+\begin{lstlisting}
+python3 buscar_plano.py 3 --tmax 8 --ordem='b(1,1)<a(0,1)'
+\end{lstlisting}
+Os arquivos desse cenário têm o sufixo \texttt{\_ordem}. Já exigir $a(0,1)$ antes de $b(1,1)$ mantém o plano de 6 ações.
+
+\subsection{Arquivos entregues}
+Para cada cenário: \texttt{trab01\_blocos2SAT\_situacaoN.cnf}, \texttt{trab01\_blocos2SAT\_situacaoN.map} e \texttt{resultadoN.txt}, com $N=1,2,3$. Os \texttt{resultadoN.txt} são a saída real do minisat para o menor $T$ satisfatível.

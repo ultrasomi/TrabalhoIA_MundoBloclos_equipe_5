@@ -1,0 +1,147 @@
+% RESPONSAVEL: Fernando (item 1) -- convertido do docx Item1_Representacao_LPO_corrigido
+\subsection{Representação em Lógica de Primeira Ordem}
+
+\subsubsection{Vocabulário}
+
+\paragraph{Constantes.}
+Blocos: $a,b,c,d$. Mesa: $T$. Instantes: $t$.
+Pontos $p\in\{0,\dots,6\}$. O slot $s_i$ é o intervalo $[i,i+1]$, com $i\in\{0,\dots,5\}$.
+Níveis $l\in\{0,1,2\}$. O nível 0 é a mesa. O nível 2 é o maior que aparece nas três situações.
+
+\paragraph{Função de tamanho.}
+\[
+\ell(a)=1\quad \ell(b)=1\quad \ell(c)=2\quad \ell(d)=3
+\]
+
+\paragraph{Predicados primitivos.}
+\begin{center}
+\begin{tabular}{p{3.2cm} p{10cm}}
+\toprule
+Predicado & Significado \\
+\midrule
+$\At(b,p,t)$  & O bloco $b$ começa no ponto $p$ no instante $t$. Posições válidas: $p\in\{0,\dots,6-\ell(b)\}$. \\
+$\Lev(b,l,t)$ & O bloco $b$ está no nível $l$ no instante $t$. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Predicados derivados (axiomas de definição).}
+\begin{align*}
+\Cov(b,s,l,t)       &\leftrightarrow \exists p.\ \At(b,p,t)\land \Lev(b,l,t)\land p\le s<p+\ell(b)\\
+\Span(b,p)          &= \{\,s\in\mathbb{N} : p\le s<p+\ell(b)\,\} = [p,p+\ell(b))\\
+\Overlap(b,p,y,q)   &\leftrightarrow \Span(b,p)\cap\Span(y,q)\neq\emptyset
+                       \quad(\text{isto é, } p<q+\ell(y)\ \land\ q<p+\ell(b))\\
+\Free(s,l,b,t)      &\leftrightarrow \neg\exists b'\neq b.\ \Cov(b',s,l,t)\\
+\Clr(b,t)           &\leftrightarrow \neg\exists b'\neq b,s,l.\ \Lev(b,l,t)\land\Cov(b,s,l,t)\land\Cov(b',s,l+1,t)\\
+\On(b,T,t)          &\leftrightarrow \Lev(b,0,t)\\
+\On(b,y,t)          &\leftrightarrow \exists s,l.\ \Cov(b,s,l,t)\land\Cov(y,s,l-1,t)\\
+\Stable(b,p,l,t)    &\leftrightarrow l=0\ \lor\ \#\{\,s\in[p,p+\ell(b)) : \exists b'\neq b.\ \Cov(b',s,l-1,t)\,\}\ \ge\ \lceil \ell(b)/2\rceil
+\end{align*}
+
+Cada característica pedida no enunciado tem um elemento correspondente:
+\begin{center}
+\begin{tabular}{p{6.2cm} p{8cm}}
+\toprule
+Característica & Elemento da LPO \\
+\midrule
+Tamanhos diferentes & $\ell$ e $\Cov$ (os slots cobertos por cada bloco) \\
+Espaços vazios & $\Free$, por slot e por nível \\
+Equilíbrio (bloco de cima maior que o de baixo) & $\Stable$ \\
+Apoio em dois blocos (ponte) & $\On(b,y_1)\land\On(b,y_2)$, derivado de $\Cov$ \\
+Dois blocos lado a lado sobre o mesmo apoio & $\Free$ por slot \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsubsection{Leis do domínio}
+Valem em todo estado, para todo instante $t$.
+\begin{align*}
+&\text{(U1)}\ \forall b,t.\ \exists! p.\ \At(b,p,t) &&\text{unicidade de posição}\\
+&\text{(U2)}\ \forall b,t.\ \exists! l.\ \Lev(b,l,t) &&\text{unicidade de nível}\\
+&\text{(L)}\ \ \At(b,p,t)\rightarrow 0\le p\le 6-\ell(b) &&\text{limites da mesa}\\
+&\text{(E)}\ \ \neg\exists b\neq b',s,l.\ \Cov(b,s,l,t)\land\Cov(b',s,l,t) &&\text{exclusão horizontal}\\
+&\text{(S)}\ \ \At(b,p,t)\land\Lev(b,l,t)\rightarrow\Stable(b,p,l,t) &&\text{estabilidade}
+\end{align*}
+
+\subsubsection{Ação $\Move(b,y,p)$}
+Significado: mover o bloco $b$ para cima de $y$ (bloco ou mesa $T$), começando no ponto $p$.
+O nível-alvo é $L=0$ se $y=T$, e $L=l_y+1$ caso contrário, onde $\Lev(y,l_y,t)$. A ação é possível em $t$ quando:
+\begin{align*}
+\Poss(\Move(b,y,p),t)\leftrightarrow\ &\Clr(b,t)\\
+&\land\ y\neq b\ \land\ 0\le p\le 6-\ell(b)\ \land\ L\le 2\\
+&\land\ \bigl(y=T\ \lor\ \exists q.\ \At(y,q,t)\land\Overlap(b,p,y,q)\bigr)\\
+&\land\ \forall s\in[p,p+\ell(b)).\ \Free(s,L,b,t)\\
+&\land\ \Stable(b,p,L,t)\\
+&\land\ \neg\bigl(\At(b,p,t)\land\Lev(b,L,t)\bigr)
+\end{align*}
+
+Subir, descer e deslizar lateralmente são o mesmo operador: o nível-alvo $L$ e a posição $p$ decidem qual dos três acontece.
+
+\paragraph{Notação.}
+$\Move(b,y,p)$ é o termo-ação e o instante $t$ entra apenas em $\Poss(\Move(b,y,p),t)$. No manual e na codificação CNF o instante aparece como quarto argumento, $\Move(b,y,p,t)$ e $\mathit{mv}(b,y,p,t)$; as duas formas são equivalentes. Em $\Span$, $\mathbb{N}$ é o conjunto dos inteiros não negativos (índices de slot).
+
+\paragraph{Desvio em relação ao manual.}
+O manual exige $\Clr(y)$, o topo inteiro do bloco de destino livre. Aqui essa exigência foi trocada por $\Free$ por slot, que é o que a pré-condição 5 do manual já pede: nenhum outro bloco ocupa os slots que $b$ vai cobrir no nível-alvo.
+Os próprios slides precisam disso. Nas Situações 2 e 3, a transição $S_4\to S_5$ coloca o $b$ sobre o $c$ ao lado do $a$, que já está lá. Com $\Clr(y)$, essas transições são impossíveis. Em $S_{f1}$ e $S_{f2}$ da Situação 1, $a$ e $b$ também ficam lado a lado sobre o mesmo bloco.
+
+\subsubsection{Estados das três situações}
+Cada estado é uma conjunção, no instante correspondente, de $\At(b,p)\land\Lev(b,l)$ para os quatro blocos. Escrevemos cada bloco como $b(p,l)$. Por exemplo, $S_0$ da Situação 1 expande para:
+\[
+\At(c,0,t)\land\Lev(c,0,t)\land\At(a,3,t)\land\Lev(a,0,t)\land\At(b,5,t)\land\Lev(b,0,t)\land\At(d,3,t)\land\Lev(d,1,t)
+\]
+
+\paragraph{Situação 1.}
+\begin{center}
+\begin{tabular}{l l}
+\toprule
+Estado & Posições $b(p,l)$ \\
+\midrule
+$S_0$    & $c(0,0)\ a(3,0)\ b(5,0)\ d(3,1)$ \\
+$S_{f1}$ & $d(3,0)\ a(4,1)\ b(5,1)\ c(4,2)$ \\
+$S_{f2}$ & $d(3,0)\ c(4,1)\ a(4,2)\ b(5,2)$ \\
+$S_{f3}$ & $c(0,0)\ a(2,0)\ d(0,1)\ b(5,0)$ \\
+$S_{f4}$ & $c(0,0)\ a(0,1)\ d(2,0)\ b(5,0)$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Situação 2.}
+\begin{center}
+\begin{tabular}{l l}
+\toprule
+Estado & Posições $b(p,l)$ \\
+\midrule
+$S_0$ & $c(0,0)\ a(0,1)\ b(1,1)\ d(3,0)$ \\
+$S_1$ & $c(0,0)\ a(0,1)\ b(2,0)\ d(3,0)$ \\
+$S_2$ & $c(0,0)\ b(2,0)\ a(2,1)\ d(3,0)$ \\
+$S_3$ & $b(2,0)\ a(2,1)\ d(3,0)\ c(4,1)$ \\
+$S_4$ & $b(2,0)\ d(3,0)\ c(4,1)\ a(4,2)$ \\
+$S_5$ & $d(3,0)\ c(4,1)\ a(4,2)\ b(5,2)$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Situação 3.}
+\begin{center}
+\begin{tabular}{l l}
+\toprule
+Estado & Posições $b(p,l)$ \\
+\midrule
+$S_0$ & $c(0,0)\ a(3,0)\ b(5,0)\ d(3,1)$ \\
+$S_1$ & $c(0,0)\ a(3,0)\ b(5,0)\ d(0,1)$ \\
+$S_2$ & $c(0,0)\ d(0,1)\ b(5,0)\ a(5,1)$ \\
+$S_3$ & $c(0,0)\ d(2,0)\ b(5,0)\ a(5,1)$ \\
+$S_4$ & $c(0,0)\ d(2,0)\ b(5,0)\ a(0,1)$ \\
+$S_5$ & $c(0,0)\ d(2,0)\ a(0,1)\ b(1,1)$ \\
+$S_6$ & igual a $S_5$ \\
+$S_7$ & $c(0,0)\ d(3,0)\ a(0,1)\ b(1,1)$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Verificação e observações.}
+\begin{itemize}
+\item Todos os estados acima satisfazem as leis (U1), (U2), (L), (E) e (S). Em $S_0$ da Situação 1, por exemplo, o $d$ cobre os slots 3, 4 e 5 no nível 1 e tem apoio nos slots 3 ($a$) e 5 ($b$): $2\ge\lceil 3/2\rceil$. Daí vem $\On(d,a)\land\On(d,b)$, com o slot 4 vazio embaixo (ponte).
+\item No slide da Situação 3, $S_5$ e $S_6$ estão desenhados iguais, e isso é intencional no enunciado. $S_6$ é o mesmo estado de $S_5$ (repetição, sem ação entre eles), e o plano segue de $S_5$ direto para $S_7$.
+\item O $S_0$ da Situação 3 é o mesmo $S_0$ da Situação 1.
+\end{itemize}

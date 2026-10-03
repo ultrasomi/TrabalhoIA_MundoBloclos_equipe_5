@@ -1,0 +1,69 @@
+\documentclass[12pt,a4paper]{article}
+
+% ---------- Pacotes ----------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazilian]{babel}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs,longtable,array}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage[hidelinks]{hyperref}
+
+% ---------- Listagens de codigo ----------
+\lstset{
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  frame=single,
+  columns=fullflexible,
+  extendedchars=true,
+  literate={á}{{\'a}}1 {à}{{\`a}}1 {â}{{\^a}}1 {ã}{{\~a}}1
+           {é}{{\'e}}1 {ê}{{\^e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ô}{{\^o}}1 {õ}{{\~o}}1
+           {ú}{{\'u}}1 {ç}{{\c c}}1 {Á}{{\'A}}1 {É}{{\'E}}1 {Ç}{{\c C}}1 {Ã}{{\~A}}1 {Ó}{{\'O}}1
+}
+
+% ---------- Notacao COMPARTILHADA (segue o Item 1 corrigido do Fernando) ----------
+% Os nomes dos comandos sao capitalizados so para evitar conflito com o LaTeX;
+% o texto renderizado sai em minusculas, como no documento do Fernando.
+% Se alguem mudar um nome de simbolo, mude AQUI e vale para o documento todo.
+\newcommand{\At}{\mathit{at}}
+\newcommand{\Lev}{\mathit{lev}}
+\newcommand{\Clr}{\mathit{clr}}
+\newcommand{\On}{\mathit{on}}
+\newcommand{\Cov}{\mathit{cov}}
+\newcommand{\Free}{\mathit{free}}
+\newcommand{\Stable}{\mathit{stable}}
+\newcommand{\Poss}{\mathit{poss}}
+\newcommand{\Overlap}{\mathit{overlap}}
+\newcommand{\Span}{\mathit{span}}
+\newcommand{\Move}{\mathit{move}}
+% tamanho do bloco: usar \ell(b)
+
+% ---------- Marcador de pendencia ----------
+\newcommand{\todo}[1]{\textcolor{red}{\textbf{[TODO: #1]}}}
+
+\title{Mundo dos Blocos de Tamanho Vari\'avel\\
+       \large Representa\c{c}\~ao do Conhecimento e Racioc\'inio Automatizado\\
+       Fundamentos de Intelig\^encia Artificial -- Prof. Edjard Mota}
+\author{Equipe 5\\
+\\Fernando Naum dos Santos Batista, Gabriel Lucas Araújo Matos,
+\\Guilherme Paiva Orlando, Luis Felipe Ferreira Cavalcante,
+\\Yuri Garcia e Silva}
+\date{2 de outubro de 2026}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+\input{secoes/01_introducao}
+\input{secoes/02_descricao_formal}
+\input{secoes/02b_execucao_manual}
+\input{secoes/03_codificacao_cnf}
+\input{secoes/04_exemplos_cenarios}
+\input{secoes/05_mapeamento}
+\input{secoes/06_execucao_passo_a_passo}
+\input{secoes/07_interpretacao_saida}
+
+\end{document}
