@@ -101,7 +101,7 @@ O conteúdo do Overleaf está em `latex/`: introdução, descrição formal (ite
 | Parte | Responsável |
 |---|---|
 | Item 1 (LPO) | Fernando |
-| Item 2 (adds/deletes) | Doze |
+| Item 2 (adds/deletes) | Luis Felipe |
 | Item 3 (execução manual, 3 situações) | Guilherme |
 | Item 4 (ordem parcial) | Guilherme |
 | Item 5 (codificação SAT) | Yuri e Gabriel |
